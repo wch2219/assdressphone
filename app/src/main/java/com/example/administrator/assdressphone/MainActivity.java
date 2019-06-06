@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 public class MainActivity extends AppCompatActivity {
     private Context context;
     private EditText et_content;
+    private EditText et_params;
     private Button btn_up;
     private TextView tv_result;
     @Override
@@ -42,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
         context = this;
         setContentView(R.layout.activity_main);
         et_content = findViewById(R.id.et_content);
+        et_params = findViewById(R.id.et_params);
         btn_up = findViewById(R.id.btn_up);
         tv_result = findViewById(R.id.tv_upresult);
         btn_up.setOnClickListener(new View.OnClickListener() {
@@ -67,15 +69,30 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(context, "输入接口地址", Toast.LENGTH_SHORT).show();
             return;
         }
+
+         String params = et_params.getText().toString().trim();
+        if (TextUtils.isEmpty(trim)) {
+
+            Toast.makeText(context, "输入参数名称", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
         List<PhoneBean> phoneInfo = getPhoneInfo();
         String s = new Gson().toJson(phoneInfo);
         Log.i("wch",s);
         OkGo.<String>post(trim)
-                .params("information",s)
+                .params(params,s)
                 .setCallback(new StringCallback() {
                     @Override
                     public void onSuccess(Response<String> response) {
+                        tv_result.setText("上传结果："+response.body());
+                    }
 
+                    @Override
+                    public void onError(Response<String> response) {
+                        super.onError(response);
+                        tv_result.setText("上传结果："+response.body());
                     }
                 });
     }

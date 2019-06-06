@@ -13,6 +13,13 @@
         android:layout_height="wrap_content"
         android:hint="输入接口地址"
         />
+     <EditText
+        android:id="@+id/et_params"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="输入参数名称"
+        />
+
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
