@@ -7,29 +7,4 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <EditText
-        android:id="@+id/et_content"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="输入接口地址"
-        />
-     <EditText
-        android:id="@+id/et_params"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="输入参数名称"
-        />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="上传"
-        android:id="@+id/btn_up"
-        />
-    <TextView
-        android:id="@+id/tv_upresult"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="上传结果："
-        />
 </LinearLayout>
