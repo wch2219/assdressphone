@@ -47,6 +47,12 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, 101);
         } else {
@@ -56,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
             }
             readPhone();
         }
-
     }
 
     private void readPhone() {
@@ -226,15 +231,13 @@ public class MainActivity extends AppCompatActivity {
                 if (grantResults.length > 0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
                     ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.READ_PHONE_STATE}, 102);
                 }else {
-                    if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
 
-                        if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])) {
-                            PermissionUtils.setPermission(context);
-                        }
+                    if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])) {
+                        PermissionUtils.setPermission(context);
                     }else {
-
                         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_CONTACTS},101);
                     }
+
 
                 }
                 break;
@@ -244,14 +247,12 @@ public class MainActivity extends AppCompatActivity {
 
                     readPhone();
                 }else {
-                    if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-
-                        if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])) {
-                            PermissionUtils.setPermission(context);
-                        }
+                    if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])) {
+                        PermissionUtils.setPermission(context);
                     }else {
 
-                        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_PHONE_STATE},101);
+                        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_PHONE_STATE},102);
+
                     }
 
                 }
