@@ -79,6 +79,9 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.READ_PHONE_STATE}, 101);
             return;
         }
+
+//        GetDoublePhone.initIsDoubleTelephone(this);
+
         String deviceid = tm.getDeviceId();//获取智能设备唯一编号
         String te1  = tm.getLine1Number();//获取本机号码
         String phonetype= android.os.Build.BRAND+Build.MODEL;
