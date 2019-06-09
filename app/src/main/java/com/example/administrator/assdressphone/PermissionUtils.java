@@ -48,6 +48,7 @@ public class PermissionUtils {
                 .setPositiveButton("去设置", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+
                         new PermissionPageUtils(context).jumpPermissionPage();
                     }
                 })

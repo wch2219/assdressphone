@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.gyf.barlibrary.ImmersionBar;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
@@ -42,26 +43,30 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         context = this;
+        setImmBar();
         setContentView(R.layout.activity_main);
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS, Manifest.permission.READ_PHONE_STATE}, 101);
+        } else {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.READ_CONTACTS,Manifest.permission.READ_PHONE_STATE}, 101);
+                return;
+            }
+            readPhone();
+        }
 
+    }
 
-
-
+    @Override
+    protected void onPause() {
+        super.onPause();
 
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_CONTACTS}, 101);
-        } else {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.READ_PHONE_STATE}, 102);
-                return;
-            }
-            readPhone();
-        }
+
     }
 
     private void readPhone() {
@@ -70,8 +75,12 @@ public class MainActivity extends AppCompatActivity {
         TelephonyManager tm = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
 
 
-        @SuppressLint("MissingPermission") String deviceid = tm.getDeviceId();//获取智能设备唯一编号
-        @SuppressLint("MissingPermission") String te1  = tm.getLine1Number();//获取本机号码
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.READ_PHONE_STATE}, 101);
+            return;
+        }
+        String deviceid = tm.getDeviceId();//获取智能设备唯一编号
+        String te1  = tm.getLine1Number();//获取本机号码
         String phonetype= android.os.Build.BRAND+Build.MODEL;
         BaseResultBean resultBean = new BaseResultBean();
         resultBean.setMobile(te1);
@@ -88,13 +97,13 @@ public class MainActivity extends AppCompatActivity {
                 .execute(new StringCallback() {
                     @Override
                     public void onSuccess(Response<String> response) {
-                        Log.i("wch",response.body());
+
                     }
 
                     @Override
                     public void onError(Response<String> response) {
                         super.onError(response);
-                        Log.i("wch",response.body());
+
 
                     }
                 });
@@ -225,39 +234,113 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
-
-        switch (requestCode){
-            case 101:
-                if (grantResults.length > 0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
-                    ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.READ_PHONE_STATE}, 102);
-                }else {
-
-                    if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])) {
-                        PermissionUtils.setPermission(context);
-                    }else {
-                        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_CONTACTS},101);
-                    }
-
-
-                }
-                break;
-
-            case 102:
-                if (grantResults.length > 0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
-
-                    readPhone();
-                }else {
-                    if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])) {
-                        PermissionUtils.setPermission(context);
-                    }else {
-
-                        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_PHONE_STATE},102);
-
-                    }
-
-                }
-
-                break;
+        if (requestCode != 101) {
+            return;
         }
+
+        if (grantResults.length > 0) {
+            List<String> deniedPermissionList = new ArrayList<>();
+            for (int i = 0; i < grantResults.length; i++) {
+                if (grantResults[i] != PackageManager.PERMISSION_GRANTED) {
+                    deniedPermissionList.add(permissions[i]);
+                }
+            }
+
+            if (deniedPermissionList.isEmpty()) {
+                //已经全部授权
+                readPhone();
+            } else {
+
+                //勾选了对话框中”Don’t ask again”的选项, 返回false
+                for (String deniedPermission : deniedPermissionList) {
+                    boolean flag = false;
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                        flag = shouldShowRequestPermissionRationale(deniedPermission);
+                    }
+                    if (!flag) {
+                        //拒绝授权
+                        PermissionUtils.setPermission(context);
+                        return;
+                    }
+                }
+                //拒绝授权
+                String []  permission = new String[deniedPermissionList.size()];
+                for (int i = 0; i < deniedPermissionList.size(); i++) {
+                    permission[i] = deniedPermissionList.get(i);
+                }
+
+                ActivityCompat.requestPermissions(this,permission,101);
+
+            }
+
+
+        }
+
+//        switch (requestCode){
+//            case 101:
+//                if (grantResults.length > 0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
+//                    ActivityCompat.requestPermissions(this, new String[]{ Manifest.permission.READ_PHONE_STATE}, 102);
+//                }else {
+//
+//                    if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])) {
+//                        PermissionUtils.setPermission(context);
+//                    }else {
+//                    }
+//
+//
+//                }
+//                break;
+//
+//            case 102:
+//                if (grantResults.length > 0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
+//
+//                    readPhone();
+//                }else {
+//                    if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])) {
+//                        PermissionUtils.setPermission(context);
+//                    }else {
+//
+//                        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_PHONE_STATE},102);
+//
+//                    }
+//
+//                }
+//
+//                break;
+//        }
+    }
+
+    public void setImmBar() {
+
+        // 判断api版本号是否大于等于19
+        if (Build.VERSION.SDK_INT < 23) {
+            return;
+        }
+//状态栏变色后的颜色
+        ImmersionBar immersionBar = ImmersionBar.with(this)
+                .transparentStatusBar()  //透明状态栏，不写默认透明色
+                .transparentNavigationBar()  //透明导航栏，不写默认黑色(设置此方法，fullScreen()方法自动为true)
+                .transparentBar()             //透明状态栏和导航栏，不写默认状态栏为透明色，导航栏为黑色（设置此方法，fullScreen()方法自动为true）
+//                .statusBarColor(R.color.colorPrimary)     //状态栏颜色，不写默认透明色
+                .navigationBarColor(R.color.colorPrimary) //导航栏颜色，不写默认黑色
+//                .barColor(R.color.colorPrimary)  //同时自定义状态栏和导航栏颜色，不写默认状态栏为透明色，导航栏为黑色
+                .statusBarAlpha(1.0f)  //状态栏透明度，不写默认0.0f
+                .navigationBarAlpha(1.0f)  //导航栏透明度，不写默认0.0F
+                .barAlpha(1.0f)  //状态栏和导航栏透明度，不写默认0.0f
+                .statusBarDarkFont(false)   //状态栏字体是深色，不写默认为亮色
+                .fullScreen(false)      //有导航栏的情况下，activity全屏显示，也就是activity最下面被导航栏覆盖，不写默认非全屏
+//                .hideBar(BarHide.FLAG_HIDE_STATUS_BAR)  //隐藏状态栏或导航栏或两者，不写默认不隐藏
+//                .setViewSupportTransformColor(toolbar) //设置支持view变色，支持一个view，不指定颜色，默认和状态栏同色，还有两个重载方法
+//                .addViewSupportTransformColor(toolbar)  //设置支持view变色，可以添加多个view，不指定颜色，默认和状态栏同色，还有两个重载方法
+//                .statusBarView(view)  //解决状态栏和布局重叠问题
+//                .fitsSystemWindows(false)    //解决状态栏和布局重叠问题，默认为false，当为true时一定要指定statusBarColor()，不然状态栏为透明色
+                .statusBarColorTransform(R.color.colorAccent)
+//                .navigationBarColorTransform(R.color.orange) //导航栏变色后的颜色
+//                .barColorTransform(R.color.orange)  //状态栏和导航栏变色后的颜色
+//                .removeSupportView()  //移除通过setViewSupportTransformColor()方法指定的view
+//                .removeSupportView(toolbar)  //移除指定view支持
+//                .removeSupportAllView() //移除全部view支持
+                .keyboardEnable(true);
+        immersionBar.init(); //必须调用方可沉浸式
     }
 }
